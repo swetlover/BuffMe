@@ -6,6 +6,7 @@
 
 local BM = BuffMe
 local S = BM.Skin
+local L = BM.L
 local UI = {}
 BM.UI = UI
 
@@ -128,10 +129,10 @@ function UI:ShowTooltip()
 	if last then
 		if last.res then
 			local r = last.res
-			local who = r.aoe and "your group" or (r.name or "?")
-			GameTooltip:AddDoubleLine("Next", r.spell .. "  >  " .. who, 0.7, 0.7, 0.7, 1, 1, 1)
+			local who = r.aoe and L["your group"] or (r.name or "?")
+			GameTooltip:AddDoubleLine(L["Next"], r.spell .. "  >  " .. who, 0.7, 0.7, 0.7, 1, 1, 1)
 			if r.pending and r.pending > 1 then
-				GameTooltip:AddDoubleLine("Still needing a buff", tostring(r.pending), 0.7, 0.7, 0.7, 1, 1, 1)
+				GameTooltip:AddDoubleLine(L["Still needing a buff"], tostring(r.pending), 0.7, 0.7, 0.7, 1, 1, 1)
 			end
 		elseif last.msg then
 			GameTooltip:AddLine(last.msg, 0.4, 1, 0.5)
@@ -141,7 +142,7 @@ function UI:ShowTooltip()
 		local lines = p:PlanLines()
 		if #lines > 0 then
 			GameTooltip:AddLine(" ")
-			GameTooltip:AddLine("Your assignments", 1, 0.82, 0)
+			GameTooltip:AddLine(L["Your assignments"], 1, 0.82, 0)
 			for _, l in ipairs(lines) do
 				local r, g, b = 1, 1, 1
 				if l[3] then r, g, b = BM:ClassColor(l[3]) end
@@ -154,14 +155,14 @@ function UI:ShowTooltip()
 		GameTooltip:AddLine(text, n > 0 and 0.7 or 1, n > 0 and 0.7 or 0.3, n > 0 and 0.7 or 0.3)
 	end
 	GameTooltip:AddLine(" ")
-	GameTooltip:AddLine("Click: cast on the next person who needs it", 0.8, 0.8, 0.8)
+	GameTooltip:AddLine(L["Click: cast on the next person who needs it"], 0.8, 0.8, 0.8)
 	if p and p.ModLines then
 		for _, l in ipairs(p:ModLines()) do
 			GameTooltip:AddDoubleLine(l[1], l[2], 0.8, 0.8, 0.8, 1, 1, 1)
 		end
 	end
-	if BM.db.wheelCast then GameTooltip:AddLine("Mouse wheel over the button also casts", 0.6, 0.6, 0.6) end
-	if not BM.db.locked then GameTooltip:AddLine("Unlocked: drag to move", 1, 0.82, 0.2) end
+	if BM.db.wheelCast then GameTooltip:AddLine(L["Mouse wheel over the button also casts"], 0.6, 0.6, 0.6) end
+	if not BM.db.locked then GameTooltip:AddLine(L["Unlocked: drag to move"], 1, 0.82, 0.2) end
 	GameTooltip:Show()
 end
 
@@ -205,14 +206,14 @@ function UI:Update()
 	if db.showTargetName then
 		if res then
 			if res.aoe then
-				btn.label:SetText("Group")
+				btn.label:SetText(L["Group"])
 				btn.label:SetTextColor(1, 1, 1)
 			else
 				btn.label:SetText(res.name or "")
 				if res.class then btn.label:SetTextColor(BM:ClassColor(res.class)) else btn.label:SetTextColor(1, 1, 1) end
 			end
 		else
-			btn.label:SetText(msg and (msg == "Everyone is buffed." and "Buffed" or "") or "")
+			btn.label:SetText(msg and (msg == L["Everyone is buffed."] and L["Buffed"] or "") or "")
 			btn.label:SetTextColor(0.4, 1, 0.5)
 		end
 	else
@@ -280,7 +281,7 @@ local function PlayerTooltip(self)
 	if self.sim then
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 		GameTooltip:AddLine(self.memberName, BM:ClassColor(self.class))
-		GameTooltip:AddLine("Group simulation: this button is not live.", 1, 0.82, 0.2)
+		GameTooltip:AddLine(L["Group simulation: this button is not live."], 1, 0.82, 0.2)
 		GameTooltip:Show()
 		return
 	end
@@ -288,12 +289,12 @@ local function PlayerTooltip(self)
 	if not m or not BM.db.tooltips then return end
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 	GameTooltip:AddLine(m.name, BM:ClassColor(m.class))
-	GameTooltip:AddLine((m.role or "?") .. (m.roleKnown and "" or " (assumed)"), 0.7, 0.7, 0.7)
+	GameTooltip:AddLine((m.role and L["role_" .. m.role] or "?") .. (m.roleKnown and "" or L[" (assumed)"]), 0.7, 0.7, 0.7)
 	local p = Provider()
 	if p and p.SelectUnit then
 		local res, msg = p:SelectUnit(m, nil)
 		if res then
-			GameTooltip:AddDoubleLine("Click", res.spell, 0.8, 0.8, 0.8, 1, 1, 1)
+			GameTooltip:AddDoubleLine(L["Click"], res.spell, 0.8, 0.8, 0.8, 1, 1, 1)
 		elseif msg then
 			GameTooltip:AddLine(msg, 0.4, 1, 0.5)
 		end
@@ -302,7 +303,7 @@ local function PlayerTooltip(self)
 		end
 		if p == BM.providers.PALADIN then
 			local pref = BM.playerPref[m.name]
-			GameTooltip:AddDoubleLine("Right-click", pref and ("Chosen: " .. BM:BlessingName(pref)) or "Choose blessing",
+			GameTooltip:AddDoubleLine(L["Right-click"], pref and string.format(L["Chosen: %s"], BM:BlessingName(pref)) or L["Choose blessing"],
 				0.8, 0.8, 0.8, pref and 1 or 0.6, pref and 0.82 or 0.6, pref and 0.2 or 0.6)
 		end
 	end
@@ -312,7 +313,7 @@ end
 local function PlayerPreClick(self)
 	if self.sim then
 		self:SetAttribute("spell", nil)
-		BM:Notice("Group simulation: these buttons are not live.")
+		BM:Notice(L["Group simulation: these buttons are not live."])
 		return
 	end
 	if InCombatLockdown() then return end
@@ -347,7 +348,7 @@ local function ShowPlayerMenu(b)
 		UIDropDownMenu_AddButton(info, level)
 
 		info = {}
-		info.text = "Automatic"
+		info.text = L["Automatic"]
 		info.checked = (BM.playerPref[m.name] == nil)
 		info.func = function() BM.playerPref[m.name] = nil; BM:RequestRefresh(0.05); CloseDropDownMenus() end
 		UIDropDownMenu_AddButton(info, level)
@@ -663,13 +664,13 @@ local function CreateMinimapButton()
 		if self.dragging then return end
 		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
 		GameTooltip:AddLine("Buff Me", 0.2, 0.72, 0.95)
-		GameTooltip:AddLine(BM.db.locked and "Button is locked" or "Button is UNLOCKED - drag it to move",
+		GameTooltip:AddLine(BM.db.locked and L["Button is locked"] or L["Button is UNLOCKED - drag it to move"],
 			BM.db.locked and 0.4 or 1, BM.db.locked and 1 or 0.82, BM.db.locked and 0.5 or 0.2)
 		GameTooltip:AddLine(" ")
-		GameTooltip:AddDoubleLine("Left-click", "Lock / unlock", 0.8, 0.8, 0.8, 1, 1, 1)
-		GameTooltip:AddDoubleLine("Right-click", "Settings", 0.8, 0.8, 0.8, 1, 1, 1)
-		GameTooltip:AddDoubleLine("Middle-click", "Assignments", 0.8, 0.8, 0.8, 1, 1, 1)
-		GameTooltip:AddDoubleLine("Drag", "Move this icon", 0.8, 0.8, 0.8, 1, 1, 1)
+		GameTooltip:AddDoubleLine(L["Left-click"], L["Lock / unlock"], 0.8, 0.8, 0.8, 1, 1, 1)
+		GameTooltip:AddDoubleLine(L["Right-click"], L["Settings"], 0.8, 0.8, 0.8, 1, 1, 1)
+		GameTooltip:AddDoubleLine(L["Middle-click"], L["Assignments"], 0.8, 0.8, 0.8, 1, 1, 1)
+		GameTooltip:AddDoubleLine(L["Drag"], L["Move this icon"], 0.8, 0.8, 0.8, 1, 1, 1)
 		GameTooltip:Show()
 	end)
 	mini:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -683,7 +684,7 @@ function BM:SetLocked(v)
 	self.db.locked = v and true or false
 	UI:Update()
 	UI:UpdateMinimap()
-	self:Print(self.db.locked and "Locked." or "Unlocked - drag the button to move it. Left-click the minimap icon to lock it again.")
+	self:Print(self.db.locked and L["Locked."] or L["Unlocked - drag the button to move it. Left-click the minimap icon to lock it again."])
 end
 
 function BM:ToggleLock()
@@ -693,7 +694,7 @@ end
 function BM:ResetPosition()
 	self.db.pos = nil
 	self:AfterCombat("pos", function() UI:ApplyPosition() end)
-	self:Print("Button position reset.")
+	self:Print(L["Button position reset."])
 end
 
 function BM:OpenOptions()
@@ -702,7 +703,7 @@ function BM:OpenOptions()
 		InterfaceOptionsFrame_OpenToCategory(BM.optionsPanel)
 		InterfaceOptionsFrame_OpenToCategory(BM.optionsPanel)
 	else
-		self:Print("Settings are not ready yet.")
+		self:Print(L["Settings are not ready yet."])
 	end
 end
 
@@ -738,7 +739,7 @@ local function CellClick(self, mouse)
 	local pal, class = self.pal, self.class
 	if not pal then return end
 	if not CanEdit(pal) then
-		BM:Notice("Only that paladin, or a raid leader / assistant, can change this.")
+		BM:Notice(L["Only that paladin, or a raid leader / assistant, can change this."])
 		return
 	end
 	if mouse == "RightButton" then
@@ -765,14 +766,14 @@ local function CellTooltip(self)
 	local loc = (LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[self.class]) or self.class
 	GameTooltip:AddLine(self.pal .. "  >  " .. loc, BM:ClassColor(self.class))
 	local key = BM.plan and BM.plan.class[self.pal] and BM.plan.class[self.pal][self.class]
-	GameTooltip:AddLine(key and BM:BlessingName(key) or "Nothing assigned", 1, 1, 1)
+	GameTooltip:AddLine(key and BM:BlessingName(key) or L["Nothing assigned"], 1, 1, 1)
 	if BM.overrides[self.pal] and BM.overrides[self.pal][self.class] then
-		GameTooltip:AddLine("Manual override", 1, 0.82, 0.2)
+		GameTooltip:AddLine(L["Manual override"], 1, 0.82, 0.2)
 	else
-		GameTooltip:AddLine("Automatic", 0.4, 1, 0.5)
+		GameTooltip:AddLine(L["Automatic"], 0.4, 1, 0.5)
 	end
 	if CanEdit(self.pal) then
-		GameTooltip:AddLine("Click: change   Right-click: back to automatic", 0.7, 0.7, 0.7)
+		GameTooltip:AddLine(L["Click: change   Right-click: back to automatic"], 0.7, 0.7, 0.7)
 	end
 	GameTooltip:Show()
 end
@@ -793,18 +794,18 @@ local function CreateGrid()
 
 	grid.title = grid:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	grid.title:SetPoint("TOPLEFT", grid, "TOPLEFT", PAD, -10)
-	grid.title:SetText("Buff Me - Paladin assignments")
+	grid.title:SetText(L["Buff Me - Paladin assignments"])
 
 	grid.close = CreateFrame("Button", nil, grid, "UIPanelCloseButton")
 	grid.close:SetPoint("TOPRIGHT", grid, "TOPRIGHT", 2, 2)
 
 	grid.empty = grid:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	grid.empty:SetPoint("TOP", grid, "TOP", 0, -64)
-	grid.empty:SetText("No paladins using Buff Me in this group.")
+	grid.empty:SetText(L["No paladins using Buff Me in this group."])
 
 	grid.hint = grid:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 	grid.hint:SetPoint("BOTTOMLEFT", grid, "BOTTOMLEFT", PAD, 8)
-	grid.hint:SetText("Updates automatically. Click a cell to override it, right-click to go back to automatic.")
+	grid.hint:SetText(L["Updates automatically. Click a cell to override it, right-click to go back to automatic."])
 
 	grid.head = {}
 	for j, class in ipairs(BM.CLASS_ORDER) do

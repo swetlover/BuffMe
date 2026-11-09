@@ -337,7 +337,7 @@ end)
 function BM:DumpPlan()
 	local plan = self.plan
 	if not plan or #plan.pals == 0 then
-		self:Print("No paladins using Buff Me in this group.")
+		self:Print(self.L["No paladins using Buff Me in this group."])
 		return
 	end
 	for _, pal in ipairs(plan.pals) do

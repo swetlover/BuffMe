@@ -12,11 +12,21 @@ BM.PREFIX = "BuffMe"
 
 local pairs, ipairs, type, tinsert = pairs, ipairs, type, table.insert
 
+-- Localization: English is the base, the zhCN file overrides it by key.
+-- Missing keys fall back to the key itself (which is the English text).
+local L = {}
+for k, v in pairs(BuffMeLocaleEN or {}) do L[k] = v end
+if GetLocale() == "zhCN" then
+	for k, v in pairs(BuffMeLocaleZH or {}) do L[k] = v end
+end
+setmetatable(L, { __index = function(_, k) return k end })
+BM.L = L
+
 -- Key binding labels ---------------------------------------------------------
 BINDING_HEADER_BUFFME = "Buff Me"
-BINDING_NAME_BUFFME_TOGGLELOCK = "Lock / unlock the Buff Me button"
-BINDING_NAME_BUFFME_TOGGLEGRID = "Show / hide the assignment window"
-_G["BINDING_NAME_CLICK BuffMeButton:LeftButton"] = "Cast next buff (Shift/Ctrl/Alt = specific buff)"
+BINDING_NAME_BUFFME_TOGGLELOCK = L["Lock / unlock the Buff Me button"]
+BINDING_NAME_BUFFME_TOGGLEGRID = L["Show / hide the assignment window"]
+_G["BINDING_NAME_CLICK BuffMeButton:LeftButton"] = L["Cast next buff (Shift/Ctrl/Alt = specific buff)"]
 
 -- Defaults ------------------------------------------------------------------
 BM.defaults = {
@@ -174,11 +184,11 @@ SlashCmdList["BUFFME"] = function(msg)
 	elseif msg:find("^sim") then
 		local n = tonumber(msg:match("^sim%s+(%d+)"))
 		if n then BM:SetSimulation(true, n) else BM:SetSimulation(not BM.sim.on) end
-		BM:Print(BM.sim.on and ("Group simulation on (" .. BM.sim.size .. " players).") or "Group simulation off.")
+		BM:Print(BM.sim.on and string.format(L["Group simulation on (%d players)."], BM.sim.size) or L["Group simulation off."])
 	elseif msg == "plan" then
 		BM:DumpPlan()
 	elseif msg == "help" then
-		BM:Print("/bm  - open settings   |  /bm lock | unlock  |  /bm grid  - assignments  |  /bm sim [size]  - group simulation  |  /bm reset")
+		BM:Print(L["/bm  - open settings   |  /bm lock | unlock  |  /bm grid  - assignments  |  /bm sim [size]  - group simulation  |  /bm reset"])
 	else
 		BM:OpenOptions()
 	end

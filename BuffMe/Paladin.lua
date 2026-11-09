@@ -12,6 +12,7 @@
 ]]
 
 local BM = BuffMe
+local L = BM.L
 local ipairs, pairs, tinsert, sort = ipairs, pairs, table.insert, table.sort
 
 local HOLY, PROT, RET = 1, 2, 3
@@ -325,7 +326,7 @@ end
 function P:Select(mod, commit)
 	local db = BM.db
 	if mod and db.mods[mod] then return self:SelectManual(mod) end
-	if not BM.plan then return nil, "Not ready yet." end
+	if not BM.plan then return nil, L["Not ready yet."] end
 
 	local wanted, greaterOf = self:Wanted()
 	local minLeft = (db.rebuffMinutes or 2) * 60
@@ -377,8 +378,8 @@ function P:Select(mod, commit)
 	end
 
 	if #cands == 0 then
-		if far > 0 then return nil, "Nobody in range needs a buff.", far end
-		return nil, "Everyone is buffed.", 0
+		if far > 0 then return nil, L["Nobody in range needs a buff."], far end
+		return nil, L["Everyone is buffed."], 0
 	end
 
 	sort(cands, function(a, b)
@@ -396,8 +397,8 @@ end
 function P:SelectManual(mod, unitOverride)
 	local key = BM.db.mods[mod]
 	local def = key and BM.BLESSINGS[key]
-	if not def then return nil, "No blessing is set for that key combination." end
-	if not BM:Knows(def.normal) then return nil, "You don't know " .. BM:BlessingName(key) .. "." end
+	if not def then return nil, L["No blessing is set for that key combination."] end
+	if not BM:Knows(def.normal) then return nil, string.format(L["You don't know %s."], BM:BlessingName(key)) end
 	local unit = unitOverride or BM:ResolveManualUnit()
 	return {
 		spell = BM:SpellName(def.normal), unit = unit, texture = BM:SpellTexture(def.normal),
@@ -408,12 +409,12 @@ end
 --- Click on one person's own button.
 function P:SelectUnit(m, mod)
 	if mod and BM.db.mods[mod] then return self:SelectManual(mod, m.unit) end
-	if not BM.plan then return nil, "Not ready yet." end
+	if not BM.plan then return nil, L["Not ready yet."] end
 	local wanted, greaterOf = self:Wanted()
 	local key = wanted[m.name]
-	if not key then return nil, "Nothing is assigned to you for " .. m.name .. "'s class." end
+	if not key then return nil, string.format(L["Nothing is assigned to you for %s's class."], m.name) end
 	local sdef = SpellFor(key, greaterOf[m.class])
-	if not sdef then return nil, "You don't know " .. BM:BlessingName(key) .. "." end
+	if not sdef then return nil, string.format(L["You don't know %s."], BM:BlessingName(key)) end
 	return {
 		spell = BM:SpellName(sdef), unit = m.unit, texture = BM:SpellTexture(sdef),
 		name = m.name, class = m.class, pending = 0, count = 1,
@@ -461,10 +462,10 @@ end
 function P:ModLines()
 	local out = {}
 	local db = BM.db
-	local labels = { { "shift", "Shift" }, { "ctrl", "Ctrl" }, { "alt", "Alt" }, { "ctrlshift", "Shift+Ctrl" } }
+	local labels = { { "shift", L["Shift"] }, { "ctrl", L["Ctrl"] }, { "alt", L["Alt"] }, { "ctrlshift", L["Shift+Ctrl"] } }
 	for _, e in ipairs(labels) do
 		local key = db.mods[e[1]]
-		if key then out[#out + 1] = { e[2] .. " + click", BM:BlessingName(key) .. " (normal)" } end
+		if key then out[#out + 1] = { string.format(L["%s + click"], e[2]), BM:BlessingName(key) .. L[" (normal)"] } end
 	end
 	return out
 end
@@ -481,7 +482,7 @@ function P:PlanLines()
 				local loc = (LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[class]) or class
 				local greater = greaterOf[class]
 				if greater == nil then greater = BM:UseGreater(b) end
-				out[#out + 1] = { loc, BM:BlessingName(b) .. (greater and " (Greater)" or ""), class }
+				out[#out + 1] = { loc, BM:BlessingName(b) .. (greater and L[" (Greater)"] or ""), class }
 			end
 		end
 	end
@@ -493,5 +494,6 @@ end
 
 function P:ReagentText()
 	local n = GetItemCount(BM.SYMBOL_OF_KINGS)
-	return "Symbol of Kings: " .. n, n
+	local iname = GetItemInfo(BM.SYMBOL_OF_KINGS) or L["Symbol of Kings"]
+	return iname .. ": " .. n, n
 end

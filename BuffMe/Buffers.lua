@@ -5,6 +5,7 @@
 ]]
 
 local BM = BuffMe
+local L = BM.L
 local ipairs, pairs, tinsert, sort = ipairs, pairs, table.insert, table.sort
 local SP = BM.SP
 
@@ -90,7 +91,7 @@ local function Build(class, defs)
 		local sd = def.single or def.aoe or def.group
 		if not BM:Knows(sd) then
 			sd = def.group
-			if not BM:Knows(sd) then return nil, "You don't know " .. BM:SpellName(primary(def)) .. "." end
+			if not BM:Knows(sd) then return nil, string.format(L["You don't know %s."], BM:SpellName(primary(def))) end
 		end
 		local unit = def.aoe and "player" or unitOverride or BM:ResolveManualUnit()
 		return {
@@ -172,8 +173,8 @@ local function Build(class, defs)
 		end
 
 		if #cands == 0 then
-			if far > 0 then return nil, "Nobody in range needs a buff.", far end
-			return nil, "Everyone is buffed.", 0
+			if far > 0 then return nil, L["Nobody in range needs a buff."], far end
+			return nil, L["Everyone is buffed."], 0
 		end
 		local c = cands[1]
 		if commit and not GCDActive(c.spell) then recent[c.key] = GetTime() end
@@ -209,7 +210,7 @@ local function Build(class, defs)
 				return self:SelectManual(def, m.unit)
 			end
 		end
-		return nil, m.name .. " has everything."
+		return nil, string.format(L["%s has everything."], m.name)
 	end
 
 	--- name -> "need" | "ok" | "far" | "off" | "na"
@@ -248,10 +249,10 @@ local function Build(class, defs)
 
 	function P:ModLines()
 		local out = {}
-		local names = { shift = "Shift", ctrl = "Ctrl", alt = "Alt", ctrlshift = "Shift+Ctrl" }
+		local names = { shift = L["Shift"], ctrl = L["Ctrl"], alt = L["Alt"], ctrlshift = L["Shift+Ctrl"] }
 		for _, def in ipairs(defs) do
 			if def.slot then
-				out[#out + 1] = { names[def.slot] .. " + click", self:Label(def) .. (def.aoe and "" or " (target / mouseover / you)") }
+				out[#out + 1] = { string.format(L["%s + click"], names[def.slot]), self:Label(def) .. (def.aoe and "" or L[" (target / mouseover / you)"]) }
 			end
 		end
 		return out
@@ -263,7 +264,7 @@ local function Build(class, defs)
 			if self:Enabled(def) then
 				local text = self:Label(def)
 				if def.group then text = text .. " / " .. BM:SpellName(def.group) end
-				out[#out + 1] = { "Auto", text }
+				out[#out + 1] = { L["Auto"], text }
 			end
 		end
 		return out
